@@ -2,14 +2,13 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/**",
-      "use": "@vercel/static"
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "src": "/(.*)", "dest": "client/build/$1" }
   ]
 }
+
