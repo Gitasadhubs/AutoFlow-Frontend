@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertProjectSchema } from "@shared/schema";
+import { config } from "../config";
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
   const queryClient = useQueryClient();
 
   const { data: repositories = [], isLoading: reposLoading } = useQuery<Repository[]>({
-    queryKey: ["/api/github/repositories"],
+    queryKey: [`${config.API_URL}/api/github/repositories`],
     enabled: step >= 2
   });
 
@@ -55,9 +56,8 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
   });
 
   const handleGitHubAuth = () => {
-    // In a real implementation, this would redirect to GitHub OAuth
-    // For now, we'll simulate the auth and move to next step
-    setStep(2);
+    // Redirect to GitHub OAuth
+    window.location.href = config.GITHUB_AUTH_URL;
   };
 
   const handleCreateProject = () => {

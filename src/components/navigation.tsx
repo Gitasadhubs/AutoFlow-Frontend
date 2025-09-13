@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
+import { config } from "../config";
 
 export default function Navigation() {
   const { data: user } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
+    queryKey: [`${config.API_URL}/api/auth/user`],
     retry: false
   });
 
@@ -47,7 +48,7 @@ export default function Navigation() {
               </div>
             ) : (
               <a 
-                href="/api/auth/github"
+                href={config.GITHUB_AUTH_URL}
                 className="btn-modern gradient-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover-lift flex items-center space-x-2"
               >
                 <i className="fab fa-github"></i>
