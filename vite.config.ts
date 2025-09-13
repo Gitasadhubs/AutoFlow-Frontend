@@ -20,24 +20,13 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     minify: "esbuild",
-    assetsDir: "assets",
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ["react", "react-dom"],
           ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
           query: ["@tanstack/react-query"],
-        },
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
-          const ext = info[info.length - 1];
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-            return `assets/images/[name]-[hash][extname]`;
-          }
-          if (/css/i.test(ext)) {
-            return `assets/css/[name]-[hash][extname]`;
-          }
-          return `assets/[name]-[hash][extname]`;
         },
       },
     },
