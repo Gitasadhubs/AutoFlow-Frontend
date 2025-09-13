@@ -1,5 +1,6 @@
 // API Configuration for AutoFlow Frontend
 // This file configures the backend API URL for different environments
+// Updated for Vercel deployment
 
 export const config = {
   // Railway backend URL - replace with your actual Railway deployment URL
