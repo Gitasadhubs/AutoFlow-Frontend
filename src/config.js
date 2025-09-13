@@ -3,7 +3,9 @@
 
 export const config = {
   // Railway backend URL - replace with your actual Railway deployment URL
-  API_URL: import.meta.env.VITE_API_URL || "https://your-app-name.up.railway.app",
+  // For local development, use: http://localhost:5000
+  // For production, use your Railway URL: https://autoflow-backend-production.up.railway.app
+  API_URL: import.meta.env.VITE_API_URL || "https://autoflow-backend-production.up.railway.app",
   
   // Environment detection
   isDevelopment: import.meta.env.DEV,
