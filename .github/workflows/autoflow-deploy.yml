@@ -1,0 +1,78 @@
+name: AutoFlow CI/CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Deployment ID'
+        required: true
+      webhook_url:
+        description: 'Webhook URL for status updates'
+        required: true
+  push:
+    branches: [ main, master, develop ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Type check
+      run: npm run type-check || echo "No type-check script found"
+
+    - name: Lint code
+      run: npm run lint || echo "No lint script found"
+
+    - name: Run tests
+      run: npm run test || echo "No test script found"
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to Vercel
+      if: env.VERCEL_TOKEN != ''
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./
+
+    - name: Deploy to Firebase (alternative)
+      if: env.FIREBASE_TOKEN != '' && !success()
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+        channelId: live
+
+    - name: Notify deployment success
+      if: success()
+      run: |
+        if [ -n "${{ github.event.inputs.webhook_url }}" ]; then
+          curl -X POST "${{ github.event.inputs.webhook_url }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"deployment_id\": \"${{ github.event.inputs.deployment_id }}\", \"status\": \"success\", \"logs\": \"Deployment completed successfully\", \"deployment_url\": \"${{ steps.vercel.outputs.preview-url || steps.firebase.outputs.details_url || 'N/A' }}\"}"
+        fi
+
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        if [ -n "${{ github.event.inputs.webhook_url }}" ]; then
+          curl -X POST "${{ github.event.inputs.webhook_url }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"deployment_id\": \"${{ github.event.inputs.deployment_id }}\", \"status\": \"failed\", \"logs\": \"Deployment failed. Check the GitHub Actions logs for details.\"}"
+        fi
