@@ -29,7 +29,7 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
   const queryClient = useQueryClient();
 
   const { data: repositories = [], isLoading: reposLoading } = useQuery<Repository[]>({
-    queryKey: [`${config.API_URL}/api/github/repositories`],
+    queryKey: ["/api/github/repositories"],
     enabled: step >= 2
   });
 

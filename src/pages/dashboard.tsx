@@ -42,7 +42,10 @@ export default function Dashboard() {
                   <i className="fas fa-folder-open text-blue-500 mr-3"></i>
                   Your Projects
                 </h2>
-                <button className="btn-modern gradient-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover-lift flex items-center space-x-2">
+                <button 
+                  onClick={() => setIsOnboardingOpen(true)}
+                  className="btn-modern gradient-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover-lift flex items-center space-x-2"
+                >
                   <i className="fas fa-plus"></i>
                   <span>New Project</span>
                 </button>

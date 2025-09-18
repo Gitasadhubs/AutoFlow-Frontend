@@ -4,7 +4,7 @@ import { config } from "../config";
 
 export default function Navigation() {
   const { data: user } = useQuery<User>({
-    queryKey: [`${config.API_URL}/api/auth/user`],
+    queryKey: ["/api/auth/user"],
     retry: false
   });
 
