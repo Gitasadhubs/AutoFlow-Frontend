@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { config } from "@/config";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -7,7 +8,7 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = config.API_URL;
 
 function getFullUrl(url: string): string {
   if (url.startsWith('http')) {

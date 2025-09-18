@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
-import { config } from "../config";
+import { config } from "@/config";
 
 export default function Navigation() {
   const { data: user } = useQuery<User>({

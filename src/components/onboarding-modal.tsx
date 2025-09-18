@@ -6,8 +6,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertProjectSchema } from "@shared/schema";
+<<<<<<< HEAD
 import { config } from "../config";
 import type { User } from "@shared/schema";
+=======
+import { config } from "@/config";
+>>>>>>> c8569dd (Fix TypeScript errors and import paths, update OAuth callback URLs, configure session middleware and CORS for production)
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -25,14 +29,28 @@ interface Repository {
 }
 
 export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
-  const [step, setStep] = useState(1);
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+<<<<<<< HEAD
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false
+=======
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false
+  });
+
+  // Start at step 2 if user is already authenticated
+  const initialStep = user ? 2 : 1;
+  const [step, setStep] = useState(initialStep);
+
+  const { data: repositories = [], isLoading: reposLoading } = useQuery<Repository[]>({
+    queryKey: ["/api/github/repositories"],
+    enabled: step >= 2 && !!user
+>>>>>>> c8569dd (Fix TypeScript errors and import paths, update OAuth callback URLs, configure session middleware and CORS for production)
   });
 
   const { data: repositories = [], isLoading: reposLoading } = useQuery<Repository[]>({
