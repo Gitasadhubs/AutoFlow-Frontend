@@ -6,7 +6,7 @@ import RecentActivity from "@/components/recent-activity";
 import Sidebar from "@/components/sidebar";
 import OnboardingModal from "@/components/onboarding-modal";
 import { useState } from "react";
-import type { Project, Activity } from "@shared/schema";
+import type { Project, Activity, Deployment } from "@shared/schema";
 
 export default function Dashboard() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
@@ -17,6 +17,10 @@ export default function Dashboard() {
 
   const { data: activities = [], isLoading: activitiesLoading } = useQuery<Activity[]>({
     queryKey: ["/api/activities"]
+  });
+
+  const { data: deployments = [], isLoading: deploymentsLoading } = useQuery<Deployment[]>({
+    queryKey: ["/api/deployments"]
   });
 
   const { data: stats } = useQuery({
@@ -81,6 +85,41 @@ export default function Dashboard() {
                     Create Your First Project
                   </button>
                 </div>
+              )}
+            </div>
+
+            <div className="modern-card p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <i className="fas fa-history text-green-500 mr-3"></i>
+                Deployment History
+              </h2>
+              {deploymentsLoading ? (
+                <p>Loading deployments...</p>
+              ) : deployments.length > 0 ? (
+                <ul className="space-y-3 max-h-64 overflow-y-auto">
+                  {deployments.map((deployment) => (
+                    <li key={deployment.id} className="border border-gray-200 rounded p-3">
+                      <p><strong>Commit:</strong> {deployment.commitMessage}</p>
+                      <p><strong>Status:</strong> {deployment.status}</p>
+                      <p><strong>Started At:</strong> {new Date(deployment.startedAt).toLocaleString()}</p>
+                      {deployment.deploymentUrl && (
+                        <p>
+                          <a href={deployment.deploymentUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                            View Deployment
+                          </a>
+                        </p>
+                      )}
+                      {deployment.buildLogs && (
+                        <details className="mt-2">
+                          <summary className="cursor-pointer text-sm text-gray-600">Build Logs</summary>
+                          <pre className="whitespace-pre-wrap max-h-40 overflow-y-auto text-xs bg-gray-100 p-2 rounded">{deployment.buildLogs}</pre>
+                        </details>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No deployments found.</p>
               )}
             </div>
 
