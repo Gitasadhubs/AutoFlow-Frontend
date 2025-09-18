@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertProjectSchema } from "@shared/schema";
 import { config } from "../config";
+import type { User } from "@shared/schema";
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -28,10 +30,21 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: repositories = [], isLoading: reposLoading } = useQuery<Repository[]>({
-    queryKey: ["/api/github/repositories"],
-    enabled: step >= 2
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+    retry: false
   });
+
+  const { data: repositories = [], isLoading: reposLoading } = useQuery<Repository[]>({
+    queryKey: ["/api/github/repos"],
+    enabled: !!user
+  });
+
+  useEffect(() => {
+    if (user && step === 1) {
+      setStep(2);
+    }
+  }, [user, step]);
 
   const createProjectMutation = useMutation({
     mutationFn: (data: any) => apiRequest("POST", "/api/projects", data),
@@ -154,52 +167,39 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">Select a Repository</h3>
             {reposLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="border rounded-lg p-4 animate-pulse">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="border rounded-lg p-4 animate-pulse">
+                <div className="h-10 bg-gray-200 rounded"></div>
               </div>
             ) : (
-              <div className="max-h-64 overflow-y-auto space-y-2">
-                {repositories.map((repo) => (
-                  <button
-                    key={repo.id}
-                    onClick={() => setSelectedRepo(repo)}
-                    className={`w-full text-left border rounded-lg p-4 hover:border-primary transition-colors ${
-                      selectedRepo?.id === repo.id ? 'border-primary bg-blue-50' : 'border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <i className={getLanguageIcon(repo.language)}></i>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{repo.name}</h4>
-                        <p className="text-sm text-gray-500">{repo.description || 'No description'}</p>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-xs text-gray-400">{repo.language}</span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-400">{repo.default_branch}</span>
+              <Select onValueChange={(value) => {
+                const repo = repositories.find(r => r.id.toString() === value);
+                setSelectedRepo(repo || null);
+              }}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a repository..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {repositories.map((repo) => (
+                    <SelectItem key={repo.id} value={repo.id.toString()}>
+                      <div className="flex items-center space-x-2">
+                        <i className={getLanguageIcon(repo.language)}></i>
+                        <div>
+                          <div className="font-medium">{repo.name}</div>
+                          <div className="text-sm text-gray-500">{repo.description || 'No description'}</div>
                         </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-            
+
             <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={() => setStep(1)}>
                 Back
               </Button>
-              <Button 
-                onClick={() => setStep(3)} 
+              <Button
+                onClick={() => setStep(3)}
                 disabled={!selectedRepo}
                 className="bg-primary hover:bg-blue-700"
               >
